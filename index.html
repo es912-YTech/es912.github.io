@@ -7,18 +7,15 @@
     <title>駕駛信用評分系統 - ES912</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* 內部樣式，用於 loading 狀態 */
+        /* loading 樣式 */
         .loading {
             opacity: 0.6;
-            /* 淡化效果 */
             pointer-events: none;
-            /* 禁用點擊 */
         }
-
         .loading-indicator {
             text-align: center;
-            margin-top: 20px;
-            font-size: 1.2em;
+            margin: 20px 0;
+            font-size: 1.1em;
             color: var(--secondary-color);
         }
     </style>
@@ -29,13 +26,14 @@
         <img src="images/0.jpg" alt="駕駛信用評分系統" class="header-img">
     </header>
     <main>
-        <table class="driver-info-table">
+        <div id="loading-text" class="loading-indicator">資料載入中...</div>
+        <table class="driver-info-table loading" id="data-table">
             <thead>
                 <tr>
                     <th colspan="6" class="main-title">駕駛信用評分系統</th>
-                    </tr>
+                </tr>
             </thead>
-            <tbody id="table-body">
+            <tbody>
                 <tr>
                     <td colspan="2" class="image-cell" rowspan="3">
                         <div class="cell-label">汽車圖片</div>
@@ -112,22 +110,11 @@
                 </tr>
             </tfoot>
         </table>
-        <div id="loading-text" class="loading-indicator">資料載入中...</div>
-        </main>
+    </main>
     <script type="module">
-        import {
-            initializeApp
-        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import {
-            getDatabase,
-            ref as dbRef,
-            onValue
-        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-        import {
-            getStorage,
-            ref as storageRef,
-            getDownloadURL
-        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+        import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
@@ -139,10 +126,12 @@
             appId: "1:705137872436:web:97058309dc0076f7e2c461"
         };
 
+        // 初始化
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
+        // dom 參考
         const refs = {
             CarBrand: document.getElementById("CarBrand"),
             LicensePlate: document.getElementById("LicensePlate"),
@@ -157,73 +146,64 @@
             Smoke: document.getElementById("Smoke"),
             CarImg: document.getElementById("CarImg"),
             DriverImg: document.getElementById("DriverImg"),
-            logs: [1, 2, 3, 4, 5].map(i => document.getElementById(`log${i}`)),
-            tableBody: document.getElementById("table-body"), //  表格 body
-            loadingText: document.getElementById("loading-text") // Loading 指示器
+            logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)),
+            dataTable: document.getElementById("data-table"),
+            loadingText: document.getElementById("loading-text")
         };
 
+        /**
+         * 更新違規次數與日誌
+         */
         function updateViolation(data) {
-            ["TooClose", "LanePressingLine", "Distractions", "Nod", "UsingMobilePhone", "Smoke"].forEach(key => {
-                refs[key].textContent = data.Violation ? .[key] || 0;
+            ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {
+                refs[key].textContent = data.Violation?.[key] ?? 0;
             });
-
-            const logArr = data.Log ? .slice(-5).reverse() || [];
-            refs.logs.forEach((el, i) => el.textContent = logArr[i] || "");
+            const arr = data.Log?.slice(-5).reverse() ?? [];
+            refs.logs.forEach((el,i) => el.textContent = arr[i] || '');
         }
 
-        function showLoading(show) {
-            // 顯示或隱藏 loading 效果
-            refs.tableBody.classList.toggle('loading', show);
+        /**
+         * 控制 loading 狀態
+         */
+        function setLoading(show) {
+            refs.dataTable.classList.toggle('loading', show);
             refs.loadingText.style.display = show ? 'block' : 'none';
         }
 
-        onValue(dbRef(db, `/ID/A123456789`), snap => {
-            showLoading(true); // 開始載入時顯示
-
+        // 監聽 Firebase 實時資料
+        const driverID = 'A123456789';
+        setLoading(true);
+        onValue(dbRef(db, `/ID/${driverID}`), snap => {
+            setLoading(false);
             if (!snap.exists()) {
-                showLoading(false); // 載入失敗時隱藏
-                console.error("No data found for /ID/A123456789");
-                // 可以考慮在這裡顯示一個錯誤訊息給使用者
+                console.error(`No data for /ID/${driverID}`);
                 return;
             }
-
             const d = snap.val();
+            console.log('Fetched data:', d);
+            // 基本欄位
             refs.CarBrand.textContent = d.CarBrand || '---';
             refs.LicensePlate.textContent = d.LicensePlate || '---';
-            refs.DriverID.textContent = 'A123456789';
+            refs.DriverID.textContent = driverID;
             refs.DriverBirthday.textContent = d.DriverBirthday || '---';
             refs.Point.textContent = d.Point ?? '--';
 
-            (d.CarImgURL ?
-                getDownloadURL(storageRef(storage, d.CarImgURL)).then(url => {
-                    refs.CarImg.src = url;
-                    showLoading(false); // 圖片載入完成後隱藏
-                }).catch(error => {
-                    console.error("Error fetching CarImgURL:", error);
-                    refs.CarImg.src = 'images/car.jpg';
-                    showLoading(false); // 載入失敗時隱藏
-                }) :
-                refs.CarImg.src = 'images/car.jpg'
-            );
-
-            (d.DriverImgURL ?
-                getDownloadURL(storageRef(storage, d.DriverImgURL)).then(url => {
-                    refs.DriverImg.src = url;
-                    showLoading(false); // 圖片載入完成後隱藏
-                }).catch(error => {
-                    console.error("Error fetching DriverImgURL:", error);
-                    refs.DriverImg.src = 'images/person.jpg';
-                    showLoading(false); // 載入失敗時隱藏
-                }) :
-                refs.DriverImg.src = 'images/person.jpg'
-            );
+            // 圖片
+            if (d.CarImgURL) {
+                getDownloadURL(storageRef(storage, d.CarImgURL))
+                    .then(url => refs.CarImg.src = url)
+                    .catch(() => refs.CarImg.src = 'images/car.jpg');
+            }
+            if (d.DriverImgURL) {
+                getDownloadURL(storageRef(storage, d.DriverImgURL))
+                    .then(url => refs.DriverImg.src = url)
+                    .catch(() => refs.DriverImg.src = 'images/person.jpg');
+            }
 
             updateViolation(d);
-            showLoading(false); // 資料載入完成後隱藏
-        }, (error) => {
-            showLoading(false); // 發生錯誤時隱藏
-            console.error("Error fetching data:", error);
-            // 處理錯誤，例如顯示錯誤訊息給使用者
+        }, err => {
+            setLoading(false);
+            console.error('Firebase error:', err);
         });
     </script>
 </body>
