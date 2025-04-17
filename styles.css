@@ -1,40 +1,33 @@
-/* —— 調整「記錄日誌」標題 —— */
-.log-label {
-    font-size: 1.3em;                /* 標題字體放大 */
-    padding: 12px 0;                 /* 加大上下內距 */
-    border-radius: var(--border-radius);  
-    background-color: var(--primary-color);
-    color: #fff;
-    text-align: center;
-    margin-bottom: 0;
-}
-
-/* —— 調整列表，顯示 5 行且字體放大 —— */
-.scrollable-list {
+/* —— 讓主表格格子有間距 —— */
+.driver-info-table {
+    border-collapse: separate;        /* 分離式邊框 */
+    border-spacing: 20px 20px;        /* 水平 20px、垂直 20px 間距 */
     width: 100%;
-    /* 1.4em (li 字體大小) + 24px (上下內距) 約為每行高度 40px，
-       5 行 * 40px = 200px，再加上邊框寬度，這裡設成 210px */
-    max-height: 210px;               
-    overflow-y: auto;
-    font-size: 1.1em;                /* 整個列表字體放大 */
-    line-height: 1.4;                /* 行高調整，讓文字好閱讀 */
-    border: 1px solid var(--border-color);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
-    padding: 0;                      /* li 本身有 padding */
-    background-color: #fff;
 }
 
-/* —— 調整每一項目 —— */
-.scrollable-list li {
-    padding: 12px 15px;              /* 加大上下/左右內距 */
-    margin: 6px 10px;                /* 調整項目間距 */
-    background-color: #e9ecef;
-    border-radius: calc(var(--border-radius) * 0.8);
-    transition: background-color .2s;
-    word-break: break-all;
+/* —— 所有 cell 加大內距 —— */
+.driver-info-table th,
+.driver-info-table td {
+    padding: 20px !important;         /* 內距拉到 20px */
 }
 
-/* —— 滑鼠經過效果 —— */
-.scrollable-list li:hover {
-    background-color: #d1ecf1;
+/* —— 圖片區／分數區預留更多寬度 —— */
+.driver-info-table .image-cell {
+    width: 28%;
+}
+.driver-info-table .score-cell {
+    width: 24%;
+}
+
+/* —— 違規次數表格同樣加間距 —— */
+.violation-summary-table {
+    border-collapse: separate;
+    border-spacing: 15px 15px;       /* 15px 間距 */
+    width: 100%;
+    margin-top: 30px;
+}
+
+.violation-summary-table th,
+.violation-summary-table td {
+    padding: 15px 12px;
 }
