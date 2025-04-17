@@ -1,0 +1,211 @@
+/* ----- 全域 & 基本樣式 ----- */
+:root {
+    --primary-color: #007bff; /* 主題色 */
+    --secondary-color: #6c757d; /* 次要色 */
+    --light-gray: #f8f9fa; /* 淺灰 */
+    --medium-gray: #dee2e6; /* 中灰 */
+    --dark-gray: #343a40; /* 深灰 */
+    --border-color: #ced4da; /* 邊框色 */
+    --shadow-color: rgba(0, 0, 0, 0.1); /* 陰影色 */
+    --danger-color: #dc3545; /* 危險/警告色 */
+    --success-color: #28a745; /* 成功色 */
+    --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* 字體 */
+    --border-radius: 0.3rem; /* 圓角 */
+}
+
+* {
+    box-sizing: border-box; /* 邊框計算方式 */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--light-gray);
+    color: var(--dark-gray);
+    line-height: 1.6;
+    padding: 20px; /* 給頁面一些邊距 */
+}
+
+main { /* 不再需要 #TestData 的樣式 */
+    max-width: 960px; /* 設定最大寬度 */
+    margin: 20px auto; /* 上下邊距 + 水平置中 */
+    background-color: #fff;
+    padding: 25px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 10px var(--shadow-color);
+}
+
+/* ----- 表格通用樣式 ----- */
+table {
+    width: 100%; /* 表格寬度佔滿容器 */
+    border-collapse: collapse; /* 合併邊框 */
+    margin-bottom: 1.5rem; /* 表格間距 */
+}
+
+th, td {
+    border: 1px solid var(--border-color);
+    padding: 12px 15px; /* 儲存格內邊距 */
+    text-align: left; /* 文字預設靠左 */
+    vertical-align: middle; /* 垂直置中 */
+}
+
+th {
+    background-color: var(--light-gray);
+    font-weight: 600; /* 標題加粗 */
+    text-align: center; /* 表頭文字置中 */
+}
+
+caption { /* 通用 caption 樣式，如果其他地方用到 */
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    text-align: center;
+}
+
+/* ----- 主資訊表格 ----- */
+.driver-info-table th.main-title {
+    font-size: 1.4em;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 15px;
+}
+
+.driver-info-table .image-cell,
+.driver-info-table .score-cell {
+    width: 40%; /* 圖片和分數區塊大致寬度 */
+    text-align: center;
+}
+ .driver-info-table .score-cell {
+    width: 20%;
+}
+
+.driver-info-table img {
+    max-width: 100%; /* 圖片最大寬度 */
+    height: auto; /* 高度自動 */
+    max-height: 200px; /* 限制最大高度 */
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    margin-top: 10px;
+    display: inline-block; /* 確保圖片居中 */
+}
+
+.driver-info-table .label-cell {
+    width: 120px; /* 標籤欄位寬度 */
+    font-weight: 500;
+    background-color: var(--light-gray);
+    text-align: right;
+    padding-right: 10px;
+}
+
+.driver-info-table .data-cell {
+    /* 資料欄位樣式 */
+}
+
+#Point {
+    font-size: 3.5em; /* 分數大小 */
+    font-weight: bold;
+    color: var(--danger-color); /* 分數用醒目顏色 */
+    display: block; /* 讓分數獨佔一行 */
+    margin: 10px 0;
+}
+
+.score-label, .log-label {
+    font-weight: bold;
+    font-size: 1.1em;
+    display: block;
+    margin-bottom: 10px;
+    text-align: center;
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 8px 0;
+    border-radius: var(--border-radius) var(--border-radius) 0 0; /* 配合列表 */
+}
+
+.log-label {
+     border-radius: var(--border-radius);
+     margin-top: 15px;
+}
+
+/* ----- 記錄日誌列表 ----- */
+.scrollable-list {
+    width: 100%; /* 列表寬度佔滿容器 */
+    max-height: 180px; /* 最大高度 */
+    overflow-y: auto; /* 超出高度時顯示滾動條 */
+    border: 1px solid var(--border-color);
+    border-radius: 0 0 var(--border-radius) var(--border-radius); /* 接續標題圓角 */
+    padding: 10px;
+    background-color: #fff;
+    list-style: none; /* 移除列表符號 */
+    box-shadow: inset 0 1px 3px var(--shadow-color); /* 內陰影 */
+}
+
+.scrollable-list li {
+    padding: 8px 12px;
+    background-color: #e9ecef;
+    border-radius: calc(var(--border-radius) * 0.8);
+    margin-bottom: 8px; /* 項目間距 */
+    font-size: 0.9em;
+    word-break: break-all; /* 長字串換行 */
+}
+.scrollable-list li:last-child {
+    margin-bottom: 0;
+}
+
+
+/* ----- 違規次數表格 ----- */
+.violation-summary-table th {
+    width: 100px; /* 標題寬度 */
+    text-align: right; /* 標題靠右 */
+    padding-right: 10px;
+    background-color: transparent; /* 使用外層表格的背景 */
+    border: none; /* 移除內部表格邊框 */
+    font-weight: 500;
+}
+.violation-summary-table td {
+     border: none; /* 移除內部表格邊框 */
+     padding: 6px 10px; /* 調整內距 */
+}
+
+.violation-summary-table .category-header {
+    font-weight: bold;
+    text-align: center; /* 類別標題置中 */
+    background-color: var(--light-gray);
+    border-bottom: 1px solid var(--border-color); /* 在這裡加底線比較適合 */
+    /* 將原本 td 上的 border-bottom 移到這裡 */
+    border-top: 1px solid var(--border-color); /* 加上頂部邊框使之完整 */
+}
+.violation-summary-table thead th{ /* 修正內部表頭樣式 */
+     border: none;
+     text-align: center;
+}
+
+
+.violation-summary-table .violation-name {
+     width: 120px; /* 違規名稱欄位寬度 */
+     color: var(--secondary-color);
+}
+
+ .violation-summary-table .violation-count {
+    font-weight: bold;
+    color: var(--danger-color);
+    width: 50px; /* 次數欄位寬度 */
+    text-align: right;
+}
+
+/* ----- 移除測試資料區塊相關樣式 ----- */
+/*
+#TestData { ... }
+#TestData caption { ... }
+#TestData th { ... }
+#TestData td { ... }
+#TestData input[...] { ... }
+#TestData input[...]:focus { ... }
+.button-container { ... }
+button { ... }
+button:hover { ... }
+button:active { ... }
+#clearButton { ... }
+#clearButton:hover { ... }
+*/

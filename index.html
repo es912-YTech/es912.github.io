@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="utf-8">
+    <title>駕駛信用評分系統 - ES912</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, update, get, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+        import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
+            authDomain: "drivingcreditscoringsystem.firebaseapp.com",
+            databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com",
+            projectId: "drivingcreditscoringsystem",
+            storageBucket: "drivingcreditscoringsystem.firebasestorage.app",
+            messagingSenderId: "705137872436",
+            appId: "1:705137872436:web:97058309dc0076f7e2c461"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        // --- DOM Element References ---
+        const CarBrand = document.getElementById("CarBrand");
+        const LicensePlate = document.getElementById("LicensePlate");
+        const DriverID = document.getElementById("DriverID");
+        const DriverBirthday = document.getElementById("DriverBirthday");
+        const Point = document.getElementById("Point");
+        const TooClose = document.getElementById("TooClose");
+        const LanePressingLine = document.getElementById("LanePressingLine");
+        const Distractions = document.getElementById("Distractions");
+        const Nod = document.getElementById("Nod");
+        const UsingMobilePhone = document.getElementById("UsingMobilePhone");
+        const Smoke = document.getElementById("Smoke");
+        const CarImg = document.getElementById("CarImg");
+        const DriverImg = document.getElementById("DriverImg");
+
+        // Log list items
+        const logElements = [
+            document.getElementById("log1"),
+            document.getElementById("log2"),
+            document.getElementById("log3"),
+            document.getElementById("log4"),
+            document.getElementById("log5")
+        ];
+
+        // --- Global Variables & Constants ---
+        let Violation = {
+            "TooClose": 0,
+            "LanePressingLine": 0,
+            "Distractions": 0,
+            "Nod": 0,
+            "UsingMobilePhone": 0,
+            "Smoke": 0
+        };
+        let ViolationLog = [];
+        const maxLog = 5;
+        const defaultSetID = "A123456789"; // 預設顯示的駕駛 ID
+        let currentDisplayID = defaultSetID; // 當前顯示的 ID
+
+        // --- Functions ---
+
+        // 更新違規次數顯示
+        function showTime() {
+            TooClose.innerHTML = Violation["TooClose"] || 0;
+            LanePressingLine.innerHTML = Violation["LanePressingLine"] || 0;
+            Distractions.innerHTML = Violation["Distractions"] || 0;
+            Nod.innerHTML = Violation["Nod"] || 0;
+            UsingMobilePhone.innerHTML = Violation["UsingMobilePhone"] || 0;
+            Smoke.innerHTML = Violation["Smoke"] || 0;
+        }
+
+        // 更新日誌列表顯示
+        function showLog() {
+            // 按時間降序排序 (最新在前)
+            ViolationLog.sort((a, b) => {
+                const timeA = new Date(a.split(" ")[0] + " " + a.split(" ")[1]).getTime();
+                const timeB = new Date(b.split(" ")[0] + " " + b.split(" ")[1]).getTime();
+                if (isNaN(timeA)) return 1; // 無效日期排在後面
+                if (isNaN(timeB)) return -1;
+                return timeB - timeA; // 降序
+            });
+            // 確保不超過最大數量 (理論上從 firebase 拿應該是處理好的，但以防萬一)
+            if (ViolationLog.length > maxLog) {
+                ViolationLog = ViolationLog.slice(0, maxLog);
+            }
+
+            logElements.forEach((logElement, index) => {
+                if (logElement) {
+                    logElement.textContent = index < ViolationLog.length ? ViolationLog[index] : "";
+                }
+            });
+        }
+
+        // 從 Firebase 獲取並顯示指定 ID 的數據
+        function fetchAndDisplayData(driverID) {
+            console.log(`Workspaceing data for ID: ${driverID}`);
+            currentDisplayID = driverID;
+            const userRef = dbRef(db, `/ID/${driverID}`);
+
+            onValue(userRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    console.log("Received data:", data);
+
+                    // 更新基本資料顯示
+                    CarBrand.innerHTML = data.CarBrand || '---';
+                    LicensePlate.innerHTML = data.LicensePlate || '---';
+                    DriverID.innerHTML = driverID;
+                    DriverBirthday.innerHTML = data.DriverBirthday || '---';
+                    Point.innerHTML = data.Point !== undefined ? data.Point : '--';
+
+                    // 更新汽車圖片 (假設 data.CarImgURL 是 Storage 的路徑)
+                    if (data.CarImgURL) {
+                        const carImageRef = storageRef(storage, data.CarImgURL);
+                        getDownloadURL(carImageRef)
+                            .then((url) => {
+                                CarImg.src = url;
+                            })
+                            .catch((error) => {
+                                console.error("Error getting car image URL:", error);
+                                // 可以設定載入失敗時的預設圖片
+                                CarImg.src = "images/car.jpg";
+                            });
+                    } else {
+                        CarImg.src = "images/car.jpg"; // 沒有圖片路徑時顯示預設圖片
+                    }
+
+                    // 更新駕駛人圖片 (假設 data.DriverImgURL 是 Storage 的路徑)
+                    if (data.DriverImgURL) {
+                        const driverImageRef = storageRef(storage, data.DriverImgURL);
+                        getDownloadURL(driverImageRef)
+                            .then((url) => {
+                                DriverImg.src = url;
+                            })
+                            .catch((error) => {
+                                console.error("Error getting driver image URL:", error);
+                                // 可以設定載入失敗時的預設圖片
+                                DriverImg.src = "1.jpg";
+                            });
+                    } else {
+                        DriverImg.src = "1.jpg"; // 沒有圖片路徑時顯示預設圖片
+                    }
+
+                    // 更新違規次數和日誌
+                    Violation = data.Violation || { /* 重置為預設空物件 */ };
+                    ViolationLog = data.Log || [];
+
+                    showTime(); // 更新違規次數顯示
+                    showLog();  // 更新日誌列表顯示
+
+                } else {
+                    console.log(`No data available for ID: ${driverID}`);
+                    // 清空介面或顯示提示
+                    CarBrand.innerHTML = '---';
+                    LicensePlate.innerHTML = '---';
+                    DriverID.innerHTML = driverID;
+                    DriverBirthday.innerHTML = '---';
+                    Point.innerHTML = '--';
+                    CarImg.src = "images/car.jpg"; // 找不到資料時顯示預設圖片
+                    DriverImg.src = "1.jpg"; // 找不到資料時顯示預設圖片
+                    Violation = {};
+                    ViolationLog = [];
+                    showTime();
+                    showLog();
+                    alert(`找不到 ID: ${driverID} 的資料`);
+                }
+            }, (error) => {
+                console.error("Firebase onValue error:", error);
+                alert("讀取資料時發生錯誤，請檢查主控台。");
+            });
+        }
+
+        // --- Initial Load ---
+        fetchAndDisplayData(defaultSetID); // 頁面載入時顯示預設 ID 的資料
+
+    </script>
+</head>
+<body>
+    <main>
+        <table class="driver-info-table">
+            <thead>
+                <tr>
+                    <th colspan="6" class="main-title">駕駛信用評分系統</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="2" class="image-cell" rowspan="3">
+                        汽車圖片<br>
+                        <img id="CarImg" src="images/car.jpg" alt="汽車圖片" width="300" height="250">
+                    </td>
+                    <td colspan="2" class="image-cell" rowspan="3">
+                        駕駛人圖片<br>
+                        <img id="DriverImg" src="1.jpg" alt="駕駛人圖片" width="300" height="250">
+                    </td>
+                    <td class="score-cell" colspan="2">
+                        <span class="score-label">總評分</span>
+                        <label id="Point">--</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="log-label-cell">
+                        <span class="log-label">記錄日誌</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" rowspan="3">
+                        <ul class="scrollable-list">
+                            <li id="log1"></li>
+                            <li id="log2"></li>
+                            <li id="log3"></li>
+                            <li id="log4"></li>
+                            <li id="log5"></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label-cell">汽車款式型號</td>
+                    <td class="data-cell"><label id="CarBrand">---</label></td>
+                    <td class="label-cell">駕駛人身分證</td>
+                    <td class="data-cell"><label id="DriverID">---</label></td>
+                </tr>
+                <tr>
+                    <td class="label-cell">汽車車牌號</td>
+                    <td class="data-cell"><label id="LicensePlate">---</label></td>
+                    <td class="label-cell">駕駛人生日</td>
+                    <td class="data-cell"><label id="DriverBirthday">---</label></td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <table class="violation-summary-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="3" class="category-header">違規次數</th>
+                                    <th colspan="5" class="category-header">駕駛狀態檢測</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th></th> <td class="violation-name">車距過近</td>
+                                    <td class="violation-count"><label id="TooClose">0</label> 次</td>
+                                    <th></th> <td class="violation-name">分心</td>
+                                    <td class="violation-count"><label id="Distractions">0</label> 次</td>
+                                    <td class="violation-name">使用手機</td>
+                                    <td class="violation-count"><label id="UsingMobilePhone">0</label> 次</td>
+                                </tr>
+                                <tr>
+                                    <th></th> <td class="violation-name">壓車道線</td>
+                                    <td class="violation-count"><label id="LanePressingLine">0</label> 次</td>
+                                    <th></th> <td class="violation-name">打瞌睡</td>
+                                    <td class="violation-count"><label id="Nod">0</label> 次</td>
+                                    <td class="violation-name">抽菸</td>
+                                    <td class="violation-count"><label id="Smoke">0</label> 次</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </main>
+</body>
+</html>
