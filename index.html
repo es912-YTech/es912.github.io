@@ -8,16 +8,23 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         /* loading 樣式 */
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .loading-indicator {
+        .loading { opacity: 0.6; pointer-events: none; }
+        .loading-indicator { text-align: center; margin: 20px 0; font-size: 1.1em; color: var(--secondary-color); }
+        /* 頁首標題樣式 */
+        .site-header { max-width: 960px; margin: 20px auto; }
+        .header-img { width: 100%; height: auto; display: block; }
+        /* 日誌欄位背景與寬度 */
+        .log-label-cell, .log-list-cell { background-color: var(--light-gray); }
+        .scrollable-list { width: 100%; max-height: 220px; overflow-y: auto; font-size: 1.1em; line-height: 1.4; margin: 0; padding: 10px; box-sizing: border-box; }
+        /* 全部表格文字置中 */
+        .driver-info-table th,
+        .driver-info-table td,
+        .violation-summary-table th,
+        .violation-summary-table td {
             text-align: center;
-            margin: 20px 0;
-            font-size: 1.1em;
-            color: var(--secondary-color);
+            vertical-align: middle;
         }
+        .cell-label { text-align: center; }
     </style>
 </head>
 
@@ -43,18 +50,22 @@
                         <div class="cell-label">駕駛人圖片</div>
                         <img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片">
                     </td>
-                    <td class="score-cell" colspan="2">
+                    <td colspan="2" class="score-cell">
                         <span class="score-label">總評分</span>
                         <span id="Point">--</span>
                     </td>
                 </tr>
+                <!-- 日誌標題，佔 3 欄寬度 -->
                 <tr>
-                    <td colspan="2" class="log-label-cell">
+                    <td colspan="3"></td>
+                    <td colspan="3" class="log-label-cell">
                         <span class="log-label">記錄日誌</span>
                     </td>
                 </tr>
+                <!-- 日誌列表，佔 3 欄寬度，背景填滿 -->
                 <tr>
-                    <td colspan="2">
+                    <td colspan="3"></td>
+                    <td colspan="3" class="log-list-cell">
                         <ul class="scrollable-list">
                             <li id="log1"></li>
                             <li id="log2"></li>
@@ -69,12 +80,14 @@
                     <td class="data-cell"><span id="CarBrand">---</span></td>
                     <td class="label-cell">駕駛人身分證</td>
                     <td class="data-cell"><span id="DriverID">---</span></td>
+                    <td colspan="2"></td>
                 </tr>
                 <tr>
                     <td class="label-cell">汽車車牌號</td>
                     <td class="data-cell"><span id="LicensePlate">---</span></td>
                     <td class="label-cell">駕駛人生日</td>
                     <td class="data-cell"><span id="DriverBirthday">---</span></td>
+                    <td colspan="2"></td>
                 </tr>
             </tbody>
             <tfoot>
@@ -126,12 +139,10 @@
             appId: "1:705137872436:web:97058309dc0076f7e2c461"
         };
 
-        // 初始化
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const storage = getStorage(app);
 
-        // dom 參考
         const refs = {
             CarBrand: document.getElementById("CarBrand"),
             LicensePlate: document.getElementById("LicensePlate"),
@@ -151,61 +162,5 @@
             loadingText: document.getElementById("loading-text")
         };
 
-        /**
-         * 更新違規次數與日誌
-         */
         function updateViolation(data) {
-            ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {
-                refs[key].textContent = data.Violation?.[key] ?? 0;
-            });
-            const arr = data.Log?.slice(-5).reverse() ?? [];
-            refs.logs.forEach((el,i) => el.textContent = arr[i] || '');
-        }
-
-        /**
-         * 控制 loading 狀態
-         */
-        function setLoading(show) {
-            refs.dataTable.classList.toggle('loading', show);
-            refs.loadingText.style.display = show ? 'block' : 'none';
-        }
-
-        // 監聽 Firebase 實時資料
-        const driverID = 'A123456789';
-        setLoading(true);
-        onValue(dbRef(db, `/ID/${driverID}`), snap => {
-            setLoading(false);
-            if (!snap.exists()) {
-                console.error(`No data for /ID/${driverID}`);
-                return;
-            }
-            const d = snap.val();
-            console.log('Fetched data:', d);
-            // 基本欄位
-            refs.CarBrand.textContent = d.CarBrand || '---';
-            refs.LicensePlate.textContent = d.LicensePlate || '---';
-            refs.DriverID.textContent = driverID;
-            refs.DriverBirthday.textContent = d.DriverBirthday || '---';
-            refs.Point.textContent = d.Point ?? '--';
-
-            // 圖片
-            if (d.CarImgURL) {
-                getDownloadURL(storageRef(storage, d.CarImgURL))
-                    .then(url => refs.CarImg.src = url)
-                    .catch(() => refs.CarImg.src = 'images/car.jpg');
-            }
-            if (d.DriverImgURL) {
-                getDownloadURL(storageRef(storage, d.DriverImgURL))
-                    .then(url => refs.DriverImg.src = url)
-                    .catch(() => refs.DriverImg.src = 'images/person.jpg');
-            }
-
-            updateViolation(d);
-        }, err => {
-            setLoading(false);
-            console.error('Firebase error:', err);
-        });
-    </script>
-</body>
-
-</html>
+            ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {`
