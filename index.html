@@ -2,131 +2,9 @@
 <html lang="zh-TW">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>駕駛信用評分系統 - ES912</title>
     <link rel="stylesheet" href="styles.css">
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getDatabase, ref as dbRef, update, get, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-        import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
-            authDomain: "drivingcreditscoringsystem.firebaseapp.com",
-            databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com",
-            projectId: "drivingcreditscoringsystem",
-            storageBucket: "drivingcreditscoringsystem.firebasestorage.app",
-            messagingSenderId: "705137872436",
-            appId: "1:705137872436:web:97058309dc0076f7e2c461"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const storage = getStorage(app);
-
-        // --- DOM Element References ---
-        const CarBrand = document.getElementById("CarBrand");
-        const LicensePlate = document.getElementById("LicensePlate");
-        const DriverID = document.getElementById("DriverID");
-        const DriverBirthday = document.getElementById("DriverBirthday");
-        const Point = document.getElementById("Point");
-        const TooClose = document.getElementById("TooClose");
-        const LanePressingLine = document.getElementById("LanePressingLine");
-        const Distractions = document.getElementById("Distractions");
-        const Nod = document.getElementById("Nod");
-        const UsingMobilePhone = document.getElementById("UsingMobilePhone");
-        const Smoke = document.getElementById("Smoke");
-        const CarImg = document.getElementById("CarImg");
-        const DriverImg = document.getElementById("DriverImg");
-
-        // Log list items
-        const logElements = [
-            document.getElementById("log1"),
-            document.getElementById("log2"),
-            document.getElementById("log3"),
-            document.getElementById("log4"),
-            document.getElementById("log5")
-        ];
-
-        // --- Global Variables & Constants ---
-        let Violation = {
-            "TooClose": 0,
-            "LanePressingLine": 0,
-            "Distractions": 0,
-            "Nod": 0,
-            "UsingMobilePhone": 0,
-            "Smoke": 0
-        };
-        let ViolationLog = [];
-        const maxLog = 5;
-        const defaultSetID = "A123456789"; // 預設顯示的駕駛 ID
-        let currentDisplayID = defaultSetID; // 當前顯示的 ID
-
-        // --- Functions ---
-
-        // 更新違規次數顯示
-        function showTime() {
-            TooClose.innerHTML = Violation["TooClose"] || 0;
-            LanePressingLine.innerHTML = Violation["LanePressingLine"] || 0;
-            Distractions.innerHTML = Violation["Distractions"] || 0;
-            Nod.innerHTML = Violation["Nod"] || 0;
-            UsingMobilePhone.innerHTML = Violation["UsingMobilePhone"] || 0;
-            Smoke.innerHTML = Violation["Smoke"] || 0;
-        }
-
-        // 更新日誌列表顯示
-        function showLog() {
-            // 按時間降序排序 (最新在前)
-            ViolationLog.sort((a, b) => {
-                const timeA = new Date(a.split(" ")[0] + " " + a.split(" ")[1]).getTime();
-                const timeB = new Date(b.split(" ")[0] + " " + b.split(" ")[1]).getTime();
-                if (isNaN(timeA)) return 1;
-                if (isNaN(timeB)) return -1;
-                return timeB - timeA;
-            });
-            if (ViolationLog.length > maxLog) ViolationLog = ViolationLog.slice(0, maxLog);
-            logElements.forEach((el, i) => el.textContent = ViolationLog[i] || "");
-        }
-
-        // 取 Firebase 資料並顯示
-        function fetchAndDisplayData(driverID) {
-            currentDisplayID = driverID;
-            const userRef = dbRef(db, `/ID/${driverID}`);
-            onValue(userRef, (snap) => {
-                if (snap.exists()) {
-                    const data = snap.val();
-                    CarBrand.innerText = data.CarBrand || '---';
-                    LicensePlate.innerText = data.LicensePlate || '---';
-                    DriverID.innerText = driverID;
-                    DriverBirthday.innerText = data.DriverBirthday || '---';
-                    Point.innerText = data.Point != null ? data.Point : '--';
-
-                    // 圖片
-                    if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => CarImg.src = url).catch(() => CarImg.src = 'images/car.jpg');
-                    else CarImg.src = 'images/car.jpg';
-                    if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => DriverImg.src = url).catch(() => DriverImg.src = 'images/person.jpg');
-                    else DriverImg.src = 'images/person.jpg';
-
-                    Violation = data.Violation || {};
-                    ViolationLog = data.Log || [];
-                    showTime(); showLog();
-                } else {
-                    CarBrand.innerText = LicensePlate.innerText = DriverBirthday.innerText = '--';
-                    DriverID.innerText = driverID;
-                    Point.innerText = '--';
-                    CarImg.src = 'images/car.jpg';
-                    DriverImg.src = 'images/person.jpg';
-                    Violation = {}; ViolationLog = [];
-                    showTime(); showLog();
-                }
-            });
-        }
-
-        // 初次載入
-        fetchAndDisplayData(defaultSetID);
-    </script>
 </head>
 <body>
     <main>
@@ -134,23 +12,23 @@
             <thead>
                 <tr>
                     <th colspan="6" class="main-title">
-                        <img src="1.png" alt="駕駛信用評分系統" class="title-img">
+                        <img src="images/title.png" alt="駕駛信用評分系統" class="title-img">
                     </th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td colspan="2" class="image-cell" rowspan="3">
-                        汽車圖片<br>
+                        <div class="cell-label">汽車圖片</div>
                         <img id="CarImg" src="images/car.jpg" alt="汽車圖片">
                     </td>
                     <td colspan="2" class="image-cell" rowspan="3">
-                        駕駛人圖片<br>
+                        <div class="cell-label">駕駛人圖片</div>
                         <img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片">
                     </td>
                     <td class="score-cell" colspan="2">
                         <span class="score-label">總評分</span>
-                        <label id="Point">--</label>
+                        <span id="Point">--</span>
                     </td>
                 </tr>
                 <tr>
@@ -159,7 +37,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2" rowspan="3">
+                    <td colspan="2">
                         <ul class="scrollable-list">
                             <li id="log1"></li>
                             <li id="log2"></li>
@@ -171,15 +49,15 @@
                 </tr>
                 <tr>
                     <td class="label-cell">汽車款式型號</td>
-                    <td class="data-cell"><label id="CarBrand">---</label></td>
+                    <td class="data-cell"><span id="CarBrand">---</span></td>
                     <td class="label-cell">駕駛人身分證</td>
-                    <td class="data-cell"><label id="DriverID">---</label></td>
+                    <td class="data-cell"><span id="DriverID">---</span></td>
                 </tr>
                 <tr>
                     <td class="label-cell">汽車車牌號</td>
-                    <td class="data-cell"><label id="LicensePlate">---</label></td>
+                    <td class="data-cell"><span id="LicensePlate">---</span></td>
                     <td class="label-cell">駕駛人生日</td>
-                    <td class="data-cell"><label id="DriverBirthday">---</label></td>
+                    <td class="data-cell"><span id="DriverBirthday">---</span></td>
                 </tr>
             </tbody>
             <tfoot>
@@ -189,25 +67,25 @@
                             <thead>
                                 <tr>
                                     <th colspan="3" class="category-header">違規次數</th>
-                                    <th colspan="5" class="category-header">駕駛狀態檢測</th>
+                                    <th colspan="3" class="category-header">駕駛狀態檢測</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="violation-name">車距過近</td>
-                                    <td class="violation-count"><label id="TooClose">0</label> 次</td>
+                                    <td class="violation-count"><span id="TooClose">0</span> 次</td>
+                                    <td class="violation-name">壓車道線</td>
+                                    <td class="violation-count"><span id="LanePressingLine">0</span> 次</td>
                                     <td class="violation-name">分心</td>
-                                    <td class="violation-count"><label id="Distractions">0</label> 次</td>
-                                    <td class="violation-name">使用手機</td>
-                                    <td class="violation-count"><label id="UsingMobilePhone">0</label> 次</td>
+                                    <td class="violation-count"><span id="Distractions">0</span> 次</td>
                                 </tr>
                                 <tr>
-                                    <td class="violation-name">壓車道線</td>
-                                    <td class="violation-count"><label id="LanePressingLine">0</label> 次</td>
                                     <td class="violation-name">打瞌睡</td>
-                                    <td class="violation-count"><label id="Nod">0</label> 次</td>
+                                    <td class="violation-count"><span id="Nod">0</span> 次</td>
+                                    <td class="violation-name">使用手機</td>
+                                    <td class="violation-count"><span id="UsingMobilePhone">0</span> 次</td>
                                     <td class="violation-name">抽菸</td>
-                                    <td class="violation-count"><label id="Smoke">0</label> 次</td>
+                                    <td class="violation-count"><span id="Smoke">0</span> 次</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -216,5 +94,71 @@
             </tfoot>
         </table>
     </main>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+        import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
+            authDomain: "drivingcreditscoringsystem.firebaseapp.com",
+            databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com",
+            projectId: "drivingcreditscoringsystem",
+            storageBucket: "drivingcreditscoringsystem.firebasestorage.app",
+            messagingSenderId: "705137872436",
+            appId: "1:705137872436:web:97058309dc0076f7e2c461"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
+
+        const refs = {
+            CarBrand: document.getElementById("CarBrand"),
+            LicensePlate: document.getElementById("LicensePlate"),
+            DriverID: document.getElementById("DriverID"),
+            DriverBirthday: document.getElementById("DriverBirthday"),
+            Point: document.getElementById("Point"),
+            TooClose: document.getElementById("TooClose"),
+            LanePressingLine: document.getElementById("LanePressingLine"),
+            Distractions: document.getElementById("Distractions"),
+            Nod: document.getElementById("Nod"),
+            UsingMobilePhone: document.getElementById("UsingMobilePhone"),
+            Smoke: document.getElementById("Smoke"),
+            CarImg: document.getElementById("CarImg"),
+            DriverImg: document.getElementById("DriverImg"),
+            logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`))
+        };
+
+        function updateViolation(data) {
+            ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {
+                refs[key].textContent = data.Violation?.[key] || 0;
+            });
+
+            const logArr = data.Log?.slice(-5).reverse() || [];
+            refs.logs.forEach((el,i) => el.textContent = logArr[i] || "");
+        }
+
+        onValue(dbRef(db, `/ID/A123456789`), snap => {
+            if (!snap.exists()) return;
+            const d = snap.val();
+            refs.CarBrand.textContent = d.CarBrand || '---';
+            refs.LicensePlate.textContent = d.LicensePlate || '---';
+            refs.DriverID.textContent = 'A123456789';
+            refs.DriverBirthday.textContent = d.DriverBirthday || '---';
+            refs.Point.textContent = d.Point ?? '--';
+
+            (d.CarImgURL
+                ? getDownloadURL(storageRef(storage, d.CarImgURL)).then(url => refs.CarImg.src = url)
+                : refs.CarImg.src = 'images/car.jpg'
+            );
+            (d.DriverImgURL
+                ? getDownloadURL(storageRef(storage, d.DriverImgURL)).then(url => refs.DriverImg.src = url)
+                : refs.DriverImg.src = 'images/person.jpg'
+            );
+
+            updateViolation(d);
+        });
+    </script>
 </body>
 </html>
