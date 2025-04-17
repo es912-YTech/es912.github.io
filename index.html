@@ -82,104 +82,50 @@
             ViolationLog.sort((a, b) => {
                 const timeA = new Date(a.split(" ")[0] + " " + a.split(" ")[1]).getTime();
                 const timeB = new Date(b.split(" ")[0] + " " + b.split(" ")[1]).getTime();
-                if (isNaN(timeA)) return 1; // 無效日期排在後面
+                if (isNaN(timeA)) return 1;
                 if (isNaN(timeB)) return -1;
-                return timeB - timeA; // 降序
+                return timeB - timeA;
             });
-            // 確保不超過最大數量 (理論上從 firebase 拿應該是處理好的，但以防萬一)
-            if (ViolationLog.length > maxLog) {
-                ViolationLog = ViolationLog.slice(0, maxLog);
-            }
-
-            logElements.forEach((logElement, index) => {
-                if (logElement) {
-                    logElement.textContent = index < ViolationLog.length ? ViolationLog[index] : "";
-                }
-            });
+            if (ViolationLog.length > maxLog) ViolationLog = ViolationLog.slice(0, maxLog);
+            logElements.forEach((el, i) => el.textContent = ViolationLog[i] || "");
         }
 
-        // 從 Firebase 獲取並顯示指定 ID 的數據
+        // 取 Firebase 資料並顯示
         function fetchAndDisplayData(driverID) {
-            console.log(`Workspaceing data for ID: ${driverID}`);
             currentDisplayID = driverID;
             const userRef = dbRef(db, `/ID/${driverID}`);
+            onValue(userRef, (snap) => {
+                if (snap.exists()) {
+                    const data = snap.val();
+                    CarBrand.innerText = data.CarBrand || '---';
+                    LicensePlate.innerText = data.LicensePlate || '---';
+                    DriverID.innerText = driverID;
+                    DriverBirthday.innerText = data.DriverBirthday || '---';
+                    Point.innerText = data.Point != null ? data.Point : '--';
 
-            onValue(userRef, (snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    console.log("Received data:", data);
+                    // 圖片
+                    if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => CarImg.src = url).catch(() => CarImg.src = 'images/car.jpg');
+                    else CarImg.src = 'images/car.jpg';
+                    if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => DriverImg.src = url).catch(() => DriverImg.src = 'images/person.jpg');
+                    else DriverImg.src = 'images/person.jpg';
 
-                    // 更新基本資料顯示
-                    CarBrand.innerHTML = data.CarBrand || '---';
-                    LicensePlate.innerHTML = data.LicensePlate || '---';
-                    DriverID.innerHTML = driverID;
-                    DriverBirthday.innerHTML = data.DriverBirthday || '---';
-                    Point.innerHTML = data.Point !== undefined ? data.Point : '--';
-
-                    // 更新汽車圖片 (假設 data.CarImgURL 是 Storage 的路徑)
-                    if (data.CarImgURL) {
-                        const carImageRef = storageRef(storage, data.CarImgURL);
-                        getDownloadURL(carImageRef)
-                            .then((url) => {
-                                CarImg.src = url;
-                            })
-                            .catch((error) => {
-                                console.error("Error getting car image URL:", error);
-                                // 可以設定載入失敗時的預設圖片
-                                CarImg.src = "images/car.jpg";
-                            });
-                    } else {
-                        CarImg.src = "images/car.jpg"; // 沒有圖片路徑時顯示預設圖片
-                    }
-
-                    // 更新駕駛人圖片 (假設 data.DriverImgURL 是 Storage 的路徑)
-                    if (data.DriverImgURL) {
-                        const driverImageRef = storageRef(storage, data.DriverImgURL);
-                        getDownloadURL(driverImageRef)
-                            .then((url) => {
-                                DriverImg.src = url;
-                            })
-                            .catch((error) => {
-                                console.error("Error getting driver image URL:", error);
-                                // 可以設定載入失敗時的預設圖片
-                                DriverImg.src = "1.jpg";
-                            });
-                    } else {
-                        DriverImg.src = "1.jpg"; // 沒有圖片路徑時顯示預設圖片
-                    }
-
-                    // 更新違規次數和日誌
-                    Violation = data.Violation || { /* 重置為預設空物件 */ };
+                    Violation = data.Violation || {};
                     ViolationLog = data.Log || [];
-
-                    showTime(); // 更新違規次數顯示
-                    showLog();  // 更新日誌列表顯示
-
+                    showTime(); showLog();
                 } else {
-                    console.log(`No data available for ID: ${driverID}`);
-                    // 清空介面或顯示提示
-                    CarBrand.innerHTML = '---';
-                    LicensePlate.innerHTML = '---';
-                    DriverID.innerHTML = driverID;
-                    DriverBirthday.innerHTML = '---';
-                    Point.innerHTML = '--';
-                    CarImg.src = "images/car.jpg"; // 找不到資料時顯示預設圖片
-                    DriverImg.src = "images/person.jpg"; // 找不到資料時顯示預設圖片
-                    Violation = {};
-                    ViolationLog = [];
-                    showTime();
-                    showLog();
-                    alert(`找不到 ID: ${driverID} 的資料`);
+                    CarBrand.innerText = LicensePlate.innerText = DriverBirthday.innerText = '--';
+                    DriverID.innerText = driverID;
+                    Point.innerText = '--';
+                    CarImg.src = 'images/car.jpg';
+                    DriverImg.src = 'images/person.jpg';
+                    Violation = {}; ViolationLog = [];
+                    showTime(); showLog();
                 }
-            }, (error) => {
-                console.error("Firebase onValue error:", error);
-                alert("讀取資料時發生錯誤，請檢查主控台。");
             });
         }
 
-        // --- Initial Load ---
-        fetchAndDisplayData(defaultSetID); // 頁面載入時顯示預設 ID 的資料
-
+        // 初次載入
+        fetchAndDisplayData(defaultSetID);
     </script>
 </head>
 <body>
@@ -196,11 +142,11 @@
                 <tr>
                     <td colspan="2" class="image-cell" rowspan="3">
                         汽車圖片<br>
-                        <img id="CarImg" src="images/car.jpg" alt="汽車圖片" width="300" height="250">
+                        <img id="CarImg" src="images/car.jpg" alt="汽車圖片">
                     </td>
                     <td colspan="2" class="image-cell" rowspan="3">
                         駕駛人圖片<br>
-                        <img id="DriverImg" src="1.jpg" alt="駕駛人圖片" width="300" height="250">
+                        <img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片">
                     </td>
                     <td class="score-cell" colspan="2">
                         <span class="score-label">總評分</span>
@@ -248,17 +194,17 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <th></th> <td class="violation-name">車距過近</td>
+                                    <td class="violation-name">車距過近</td>
                                     <td class="violation-count"><label id="TooClose">0</label> 次</td>
-                                    <th></th> <td class="violation-name">分心</td>
+                                    <td class="violation-name">分心</td>
                                     <td class="violation-count"><label id="Distractions">0</label> 次</td>
                                     <td class="violation-name">使用手機</td>
                                     <td class="violation-count"><label id="UsingMobilePhone">0</label> 次</td>
                                 </tr>
                                 <tr>
-                                    <th></th> <td class="violation-name">壓車道線</td>
+                                    <td class="violation-name">壓車道線</td>
                                     <td class="violation-count"><label id="LanePressingLine">0</label> 次</td>
-                                    <th></th> <td class="violation-name">打瞌睡</td>
+                                    <td class="violation-name">打瞌睡</td>
                                     <td class="violation-count"><label id="Nod">0</label> 次</td>
                                     <td class="violation-name">抽菸</td>
                                     <td class="violation-count"><label id="Smoke">0</label> 次</td>
