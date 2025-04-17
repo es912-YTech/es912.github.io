@@ -1,13 +1,30 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>駕駛信用評分系統 - ES912</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* 內部樣式，用於 loading 狀態 */
+        .loading {
+            opacity: 0.6;
+            /* 淡化效果 */
+            pointer-events: none;
+            /* 禁用點擊 */
+        }
+
+        .loading-indicator {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: var(--secondary-color);
+        }
+    </style>
 </head>
+
 <body>
-    <!-- 頁首標題圖片放最上面 -->
     <header class="site-header">
         <img src="images/title.jpg" alt="駕駛信用評分系統" class="header-img">
     </header>
@@ -15,13 +32,10 @@
         <table class="driver-info-table">
             <thead>
                 <tr>
-                    <th colspan="6" class="main-title">
-                        <!-- 如果想保留表格內標題圖，可同時顯示 -->
-                        <img src="images/title.jpg" alt="駕駛信用評分系統" class="title-img">
-                    </th>
-                </tr>
+                    <th colspan="6" class="main-title">駕駛信用評分系統</th>
+                    </tr>
             </thead>
-            <tbody>
+            <tbody id="table-body">
                 <tr>
                     <td colspan="2" class="image-cell" rowspan="3">
                         <div class="cell-label">汽車圖片</div>
@@ -98,11 +112,22 @@
                 </tr>
             </tfoot>
         </table>
-    </main>
+        <div id="loading-text" class="loading-indicator">資料載入中...</div>
+        </main>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-        import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-        import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import {
+            getDatabase,
+            ref as dbRef,
+            onValue
+        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+        import {
+            getStorage,
+            ref as storageRef,
+            getDownloadURL
+        } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
@@ -132,20 +157,36 @@
             Smoke: document.getElementById("Smoke"),
             CarImg: document.getElementById("CarImg"),
             DriverImg: document.getElementById("DriverImg"),
-            logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`))
+            logs: [1, 2, 3, 4, 5].map(i => document.getElementById(`log${i}`)),
+            tableBody: document.getElementById("table-body"), //  表格 body
+            loadingText: document.getElementById("loading-text") // Loading 指示器
         };
 
         function updateViolation(data) {
-            ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {
-                refs[key].textContent = data.Violation?.[key] || 0;
+            ["TooClose", "LanePressingLine", "Distractions", "Nod", "UsingMobilePhone", "Smoke"].forEach(key => {
+                refs[key].textContent = data.Violation ? .[key] || 0;
             });
 
-            const logArr = data.Log?.slice(-5).reverse() || [];
-            refs.logs.forEach((el,i) => el.textContent = logArr[i] || "");
+            const logArr = data.Log ? .slice(-5).reverse() || [];
+            refs.logs.forEach((el, i) => el.textContent = logArr[i] || "");
+        }
+
+        function showLoading(show) {
+            // 顯示或隱藏 loading 效果
+            refs.tableBody.classList.toggle('loading', show);
+            refs.loadingText.style.display = show ? 'block' : 'none';
         }
 
         onValue(dbRef(db, `/ID/A123456789`), snap => {
-            if (!snap.exists()) return;
+            showLoading(true); // 開始載入時顯示
+
+            if (!snap.exists()) {
+                showLoading(false); // 載入失敗時隱藏
+                console.error("No data found for /ID/A123456789");
+                // 可以考慮在這裡顯示一個錯誤訊息給使用者
+                return;
+            }
+
             const d = snap.val();
             refs.CarBrand.textContent = d.CarBrand || '---';
             refs.LicensePlate.textContent = d.LicensePlate || '---';
@@ -153,17 +194,38 @@
             refs.DriverBirthday.textContent = d.DriverBirthday || '---';
             refs.Point.textContent = d.Point ?? '--';
 
-            (d.CarImgURL
-                ? getDownloadURL(storageRef(storage, d.CarImgURL)).then(url => refs.CarImg.src = url)
-                : refs.CarImg.src = 'images/car.jpg'
+            (d.CarImgURL ?
+                getDownloadURL(storageRef(storage, d.CarImgURL)).then(url => {
+                    refs.CarImg.src = url;
+                    showLoading(false); // 圖片載入完成後隱藏
+                }).catch(error => {
+                    console.error("Error fetching CarImgURL:", error);
+                    refs.CarImg.src = 'images/car.jpg';
+                    showLoading(false); // 載入失敗時隱藏
+                }) :
+                refs.CarImg.src = 'images/car.jpg'
             );
-            (d.DriverImgURL
-                ? getDownloadURL(storageRef(storage, d.DriverImgURL)).then(url => refs.DriverImg.src = url)
-                : refs.DriverImg.src = 'images/person.jpg'
+
+            (d.DriverImgURL ?
+                getDownloadURL(storageRef(storage, d.DriverImgURL)).then(url => {
+                    refs.DriverImg.src = url;
+                    showLoading(false); // 圖片載入完成後隱藏
+                }).catch(error => {
+                    console.error("Error fetching DriverImgURL:", error);
+                    refs.DriverImg.src = 'images/person.jpg';
+                    showLoading(false); // 載入失敗時隱藏
+                }) :
+                refs.DriverImg.src = 'images/person.jpg'
             );
 
             updateViolation(d);
+            showLoading(false); // 資料載入完成後隱藏
+        }, (error) => {
+            showLoading(false); // 發生錯誤時隱藏
+            console.error("Error fetching data:", error);
+            // 處理錯誤，例如顯示錯誤訊息給使用者
         });
     </script>
 </body>
+
 </html>
