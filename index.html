@@ -113,29 +113,46 @@
       </div>
   </div>
   <script type="module">
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
     import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
-    const firebaseConfig = { apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw", authDomain: "drivingcreditscoringsystem.firebaseapp.com", databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com", projectId: "drivingcreditscoringsystem", storageBucket: "drivingcreditscoringsystem.firebasestorage.app", messagingSenderId: "705137872436", appId: "1:705137872436:web:97058309dc0076f7e2c461" };
+    const firebaseConfig = {
+      apiKey: "AIzaSyAIKckHmmsP10KyEwIm-oo0iOuDSK6Wg5Q",
+      authDomain: "yuntech-driver-credit.firebaseapp.com",
+      databaseURL: "https://yuntech-driver-credit-default-rtdb.firebaseio.com",
+      projectId: "yuntech-driver-credit",
+      storageBucket: "yuntech-driver-credit.firebasestorage.app",
+      messagingSenderId: "314900664812",
+      appId: "1:314900664812:web:f74cb3a2fe358ba38870c9",
+      measurementId: "G-ZFCMMCB2XB"
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const storage = getStorage(app);
-    const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), SeatBelt: document.getElementById("SeatBelt"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5,6,7,8,9].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
-    
+    const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"),
+    DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"),
+    Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"),
+    LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"),
+    Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"),
+    Smoke: document.getElementById("Smoke"), SeatBelt: document.getElementById("SeatBelt"),
+    CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"),
+    logs: [1,2,3,4,5,6,7,8,9].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
+
     function updateViolation(data) {
-  const logs = Array.isArray(data.Logs) ? data.Logs : [];
+      const logs = Array.isArray(data.Logs) ? data.Logs : [];
 
-  // 1. 直接取最後 9 筆（不排序，全拿 append 時就已經是順序）
-  const latest9 = logs.slice(-9);
+      // 1. 直接取最後 9 筆（不排序，全拿 append 時就已經是順序）
+      const latest9 = logs.slice(-9);
 
-  // 2. 更新畫面：只在不一樣時才賦值
-  refs.logs.forEach((el, i) => {
-    const text = latest9[i] || '';
-    if (el.textContent !== text) {
-      el.textContent = text;
+      // 2. 更新畫面：只在不一樣時才賦值
+      refs.logs.forEach((el, i) => {
+        const text = latest9[i] || '';
+        if (el.textContent !== text) {
+          el.textContent = text;
+        }
+      });
     }
-  });
-}
 
     function updateViolationTimes(data) {
       refs.TooClose.textContent = data.TooClose ?? "---";
