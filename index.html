@@ -121,21 +121,21 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
     const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), SeatBelt: document.getElementById("SeatBelt"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5,6,7,8,9].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
+    
     function updateViolation(data) {
-      // 先保證有 Log 陣列，再排序：依時間由大到小（最新在前）
-      const sorted = (data.Log || []).slice().sort((a, b) => {
-        // 例如「2025-04-17 18:12:32 壓車道線」
-        const tA = new Date(a.split(' ')[0] + ' ' + a.split(' ')[1]).getTime();
-        const tB = new Date(b.split(' ')[0] + ' ' + b.split(' ')[1]).getTime();
-        return tB - tA;
-      });
-      // 只取最新 5 筆
-      const arr = sorted.slice(0, 9);
-      // 填入畫面
-      refs.logs.forEach((el, i) => {
-        el.textContent = top9Logs[i] || '';
-      });
+  const logs = Array.isArray(data.Logs) ? data.Logs : [];
+
+  // 1. 直接取最後 9 筆（不排序，全拿 append 時就已經是順序）
+  const latest9 = logs.slice(-9);
+
+  // 2. 更新畫面：只在不一樣時才賦值
+  refs.logs.forEach((el, i) => {
+    const text = latest9[i] || '';
+    if (el.textContent !== text) {
+      el.textContent = text;
     }
+  });
+}
 
     function updateViolationTimes(data) {
       refs.TooClose.textContent = data.TooClose ?? "---";
