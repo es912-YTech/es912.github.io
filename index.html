@@ -46,7 +46,7 @@
     .log-card { background: #fff; border-radius: var(--border-radius); box-shadow: 0 1px 3px var(--shadow-color); }
     .log-card h3 { background: var(--primary-color); color: #fff; margin: 0; padding: 12px; font-size: 1.2em; border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); text-align: center; }
     .scrollable-list { max-height: 240px; overflow-y: auto; list-style: none; margin: 0; padding: 0; text-align: center; }
-    .scrollable-list li { background: var(--light-gray); margin: 4px 0; padding: 10px; border-radius: var(--border-radius); text-align: center; }
+    .scrollable-list li { background: var(--light-gray); margin: 4px 0; padding: 10px; padding-left: 35%; border-radius: var(--border-radius); text-align: left; }
 
     .summary-wrapper { display: flex; flex-direction: column; gap: 20px; }
     .summary-card { background: var(--light-gray); border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 1px 3px var(--shadow-color); }
@@ -101,6 +101,7 @@
             <tr><td>打瞌睡</td><td><span id="Nod">0</span> 次</td></tr>
             <tr><td>使用手機</td><td><span id="UsingMobilePhone">0</span> 次</td></tr>
             <tr><td>抽菸</td><td><span id="Smoke">0</span> 次</td></tr>
+            <tr><td>未繫安全帶</td><td><span id="SeatBelt">0</span> 次</td></tr>
           </table>
         </div>
       </div>
@@ -113,7 +114,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const storage = getStorage(app);
-    const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
+    const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), SeatBelt: document.getElementById("SeatBelt"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
     function updateViolation(data) {
       // 先保證有 Log 陣列，再排序：依時間由大到小（最新在前）
       const sorted = (data.Log || []).slice().sort((a, b) => {
@@ -129,12 +130,21 @@
         el.textContent = arr[i] || '';
       });
     }
+    function updateViolationTimes(data) {
+      refs.TooClose.textContent = data.TooClose ?? "---";
+      refs.LanePressingLine.textContent = data.LanePressingLine ?? "---";
+      refs.Distractions.textContent = data.Distractions ?? "---";
+      refs.Nod.textContent = data.Nod ?? "---";
+      refs.UsingMobilePhone.textContent = data.UsingMobilePhone ?? "---";
+      refs.Smoke.textContent = data.Smoke ?? "---";
+      refs.SeatBelt.textContent = data.SeatBelt ?? "---";
+    }
     function setLoading(show) {
       document.querySelectorAll('.card, .info-card, .log-card, .summary-card').forEach(el => el.classList.toggle('loading', show));
       refs.loadingText.style.display = show ? 'block' : 'none';
     }
     const driverID = 'A123456789'; setLoading(true);
-    onValue(dbRef(db, `/ID/${driverID}`), snap => { setLoading(false); if (!snap.exists()) return; const data = snap.val(); refs.CarBrand.textContent = data.CarBrand || '---'; refs.LicensePlate.textContent = data.LicensePlate || '---'; refs.DriverID.textContent = driverID; refs.DriverBirthday.textContent = data.DriverBirthday || '---'; refs.Point.textContent = data.Point ?? '--'; if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => refs.CarImg.src = url).catch(() => refs.CarImg.src = 'images/car.jpg'); if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => refs.DriverImg.src = url).catch(() => refs.DriverImg.src = 'images/person.jpg'); updateViolation(data); }, err => { setLoading(false); console.error('Firebase error:', err); });
+    onValue(dbRef(db, `/ID/${driverID}`), snap => { setLoading(false); if (!snap.exists()) return; const data = snap.val(); refs.CarBrand.textContent = data.CarBrand || '---'; refs.LicensePlate.textContent = data.LicensePlate || '---'; refs.DriverID.textContent = driverID; refs.DriverBirthday.textContent = data.DriverBirthday || '---'; refs.Point.textContent = data.Point ?? '--'; updateViolationTimes(data.Violation); if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => refs.CarImg.src = url).catch(() => refs.CarImg.src = 'images/car.jpg'); if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => refs.DriverImg.src = url).catch(() => refs.DriverImg.src = 'images/person.jpg'); updateViolation(data); }, err => { setLoading(false); console.error('Firebase error:', err); });
   </script>
 </body>
 </html>
