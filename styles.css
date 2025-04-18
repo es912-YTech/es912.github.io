@@ -39,23 +39,19 @@ main {
     box-shadow: 0 2px 10px var(--shadow-color);
 }
 
-/* ===== 主表格 (合併邊框 + 間距) ===== */
+/* ===== 主表格 (條件移除) ===== */
 .driver-info-table {
     width: 100%;
     border-collapse: collapse;
-    /* 改為合併邊框 */
-    /* border-spacing: 25px 20px;   /* 水平 25px, 垂直 20px */
 }
 
 .driver-info-table th,
 .driver-info-table td {
     background-color: #fff;
     padding: 12px 10px;
-    /* 減少內距 */
     text-align: left;
     vertical-align: middle;
     border: 1px solid var(--border-color);
-    /* 加入框線 */
 }
 
 .driver-info-table th.main-title {
@@ -64,7 +60,6 @@ main {
     font-size: 1.6em;
     text-align: center;
     padding: 16px 10px;
-    /* 減少內距 */
     border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
@@ -95,7 +90,6 @@ main {
     font-size: 1.2em;
     display: block;
     margin-bottom: 8px;
-    /* 減少間距 */
 }
 
 #Point {
@@ -109,9 +103,7 @@ main {
 /* ===== 記錄日誌 ===== */
 .log-label {
     font-size: 1.2em;
-    /* 縮小字體 */
     padding: 10px 0;
-    /* 減少內距 */
     background-color: var(--primary-color);
     color: #fff;
     text-align: center;
@@ -123,28 +115,26 @@ main {
 .scrollable-list {
     width: 100%;
     max-height: 150px;
-    /* 縮小高度 */
     overflow-y: auto;
     font-size: 0.9em;
-    /* 縮小字體 */
     line-height: 1.2;
-    /* 減少行高 */
     border: 1px solid var(--border-color);
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
     margin-top: 0;
     background-color: #fff;
+    text-align: center; /* 文字置中 */
 }
 
 .scrollable-list li {
-    padding: 8px 10px;
-    /* 減少內距 */
-    margin: 4px 5px;
-    /* 減少外距 */
+    padding: 8px 0;       /* 只保留垂直Padding */
+    margin: 4px 0;        /* 只有垂直間距 */
     background-color: #e9ecef;
     border-radius: calc(var(--border-radius) * 0.8);
     transition: background-color var(--transition-speed);
     word-break: break-all;
+    text-align: center;   /* 文字置中 */
+    box-shadow: inset 0 1px 2px var(--shadow-color);
 }
 
 .scrollable-list li:hover {
@@ -155,18 +145,13 @@ main {
 .violation-summary-table {
     width: 100%;
     border-collapse: collapse;
-    /* 改為合併邊框 */
-    /* border-spacing: 0 12px;     /* 上下 12px 間距 */
     margin-top: 20px;
-    /* 減少外距 */
 }
 
 .violation-summary-table th,
 .violation-summary-table td {
     padding: 8px 10px;
-    /* 減少內距 */
     border: 1px solid var(--border-color);
-    /* 加入框線 */
 }
 
 .violation-summary-table .category-header {
@@ -179,3 +164,9 @@ main {
 
 .violation-summary-table .violation-name {
     color: var(--secondary-color);
+}
+
+.violation-summary-table .violation-count {
+    font-weight: bold;
+    color: var(--danger-color);
+}
