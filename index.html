@@ -115,9 +115,19 @@
     const storage = getStorage(app);
     const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
     function updateViolation(data) {
-      ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => { refs[key].textContent = data.Violation?.[key] ?? 0 });
-      const arr = data.Log?.slice(-5).reverse() ?? [];
-      refs.logs.forEach((el,i) => el.textContent = arr[i] || '');
+      // 先保證有 Log 陣列，再排序：依時間由大到小（最新在前）
+      const sorted = (data.Log || []).slice().sort((a, b) => {
+        // 例如「2025-04-17 18:12:32 壓車道線」
+        const tA = new Date(a.split(' ')[0] + ' ' + a.split(' ')[1]).getTime();
+        const tB = new Date(b.split(' ')[0] + ' ' + b.split(' ')[1]).getTime();
+        return tB - tA;
+      });
+      // 只取最新 5 筆
+      const arr = sorted.slice(0, 5);
+      // 填入畫面
+      refs.logs.forEach((el, i) => {
+        el.textContent = arr[i] || '';
+      });
     }
     function setLoading(show) {
       document.querySelectorAll('.card, .info-card, .log-card, .summary-card').forEach(el => el.classList.toggle('loading', show));
