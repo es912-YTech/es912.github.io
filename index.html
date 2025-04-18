@@ -133,9 +133,10 @@
       const arr = sorted.slice(0, 9);
       // 填入畫面
       refs.logs.forEach((el, i) => {
-        el.textContent = arr[i] || '';
+        el.textContent = top9Logs[i] || '';
       });
     }
+
     function updateViolationTimes(data) {
       refs.TooClose.textContent = data.TooClose ?? "---";
       refs.LanePressingLine.textContent = data.LanePressingLine ?? "---";
