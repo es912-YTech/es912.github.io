@@ -12,16 +12,20 @@
       --light-gray: #f8f9fa;
       --medium-gray: #dee2e6;
       --dark-gray: #343a40;
-      --border-radius: 0.3rem;
+      --border-color: #ced4da;
       --shadow-color: rgba(0, 0, 0, 0.1);
       --danger-color: #dc3545;
+      --success-color: #28a745;
+      --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      --border-radius: 0.3rem;
+      --transition-speed: 0.2s;
     }
-    body { background: var(--light-gray); margin: 0; font-family: var(--font-family, 'Segoe UI', Tahoma, sans-serif); }
+    body { background: var(--light-gray); margin: 0; font-family: var(--font-family); }
     .container { max-width: 960px; margin: 20px auto; background: #fff; padding: 20px; border-radius: var(--border-radius); box-shadow: 0 2px 10px var(--shadow-color); }
     .site-header { margin-bottom: 20px; }
     .header-img { width: 100%; height: auto; display: block; border-radius: var(--border-radius); }
 
-    /* Top Section: 3 equal columns */
+    /* Top Section */
     .top-section { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 30px; }
     .card { background: var(--light-gray); border-radius: var(--border-radius); padding: 16px; text-align: center; }
     .card img { width: 100%; height: auto; border-radius: var(--border-radius); }
@@ -30,64 +34,47 @@
     .score-card .score-label { font-size: 1.3em; margin-bottom: 12px; }
     .score-card #Point { font-size: 3em; color: var(--danger-color); }
 
-    /* Info Grid: 4 columns */
+    /* Info Grid */
     .info-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-bottom: 30px; }
     .info-card { background: var(--light-gray); border-radius: var(--border-radius); padding: 12px; text-align: center; }
     .info-card strong { display: block; margin-bottom: 8px; }
 
-    /* Bottom Section: 2 columns */
+    /* Bottom Section */
     .bottom-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-    .log-card { background: var(--light-gray); border-radius: var(--border-radius); padding: 16px; }
-    .log-card h3 { margin-top: 0; font-size: 1.2em; }
-    .scrollable-list { max-height: 240px; overflow-y: auto; list-style: none; margin: 0; padding: 0; }
-    .scrollable-list li { background: #fff; margin: 6px 0; padding: 8px; border-radius: var(--border-radius); }
+
+    /* 記錄日誌藍色樣式 */
+    .log-card { background: #fff; border-radius: var(--border-radius); box-shadow: 0 1px 3px var(--shadow-color); }
+    .log-card h3 { background: var(--primary-color); color: #fff; margin: 0; padding: 12px; font-size: 1.2em; border-top-left-radius: var(--border-radius); border-top-right-radius: var(--border-radius); text-align: center; }
+    .scrollable-list { max-height: 240px; overflow-y: auto; list-style: none; margin: 0; padding: 0; text-align: center; }
+    .scrollable-list li { background: var(--light-gray); margin: 4px 0; padding: 10px; border-radius: var(--border-radius); text-align: center; }
 
     .summary-wrapper { display: flex; flex-direction: column; gap: 20px; }
-    .summary-card { background: var(--light-gray); border-radius: var(--border-radius); overflow: hidden; }
-    .summary-card h3 { background: var(--secondary-color); color: #fff; margin: 0; padding: 10px; font-size: 1.1em; }
+    .summary-card { background: var(--light-gray); border-radius: var(--border-radius); overflow: hidden; box-shadow: 0 1px 3px var(--shadow-color); }
+    .summary-card h3 { background: var(--secondary-color); color: #fff; margin: 0; padding: 10px; font-size: 1.1em; text-align: center; }
     .summary-card table { width: 100%; border-collapse: collapse; }
     .summary-card td { padding: 10px; text-align: center; }
 
-    /* Loading */
     .loading { opacity: 0.5; pointer-events: none; }
     .loading-indicator { text-align: center; margin: 10px 0; color: var(--secondary-color); }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Banner -->
     <header class="site-header">
       <img src="images/0.jpg" alt="駕駛信用評分系統" class="header-img">
     </header>
-
-    <!-- Loading -->
     <div id="loading-text" class="loading-indicator">資料載入中...</div>
-
-    <!-- Top Section -->
     <section class="top-section">
-      <div class="card image-card">
-        <h3>汽車圖片</h3>
-        <img id="CarImg" src="images/car.jpg" alt="汽車圖片">
-      </div>
-      <div class="card image-card">
-        <h3>駕駛人圖片</h3>
-        <img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片">
-      </div>
-      <div class="card score-card">
-        <div class="score-label">總評分</div>
-        <div id="Point">--</div>
-      </div>
+      <div class="card image-card"><h3>汽車圖片</h3><img id="CarImg" src="images/car.jpg" alt="汽車圖片"></div>
+      <div class="card image-card"><h3>駕駛人圖片</h3><img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片"></div>
+      <div class="card score-card"><div class="score-label">總評分</div><div id="Point">--</div></div>
     </section>
-
-    <!-- Info Grid -->
     <section class="info-grid">
       <div class="info-card"><strong>汽車款式型號</strong><span id="CarBrand">---</span></div>
       <div class="info-card"><strong>汽車車牌號</strong><span id="LicensePlate">---</span></div>
       <div class="info-card"><strong>駕駛人身分證</strong><span id="DriverID">---</span></div>
       <div class="info-card"><strong>駕駛人生日</strong><span id="DriverBirthday">---</span></div>
     </section>
-
-    <!-- Bottom Section -->
     <section class="bottom-section">
       <div class="log-card">
         <h3>記錄日誌</h3>
@@ -117,50 +104,18 @@
           </table>
         </div>
       </div>
-    </section>
   </div>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
     import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw",
-      authDomain: "drivingcreditscoringsystem.firebaseapp.com",
-      databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com",
-      projectId: "drivingcreditscoringsystem",
-      storageBucket: "drivingcreditscoringsystem.firebasestorage.app",
-      messagingSenderId: "705137872436",
-      appId: "1:705137872436:web:97058309dc0076f7e2c461"
-    };
+    const firebaseConfig = { apiKey: "AIzaSyCK4juwHIRyHmWx5wrZXb2uxLKJoeZ0cdw", authDomain: "drivingcreditscoringsystem.firebaseapp.com", databaseURL: "https://drivingcreditscoringsystem-default-rtdb.firebaseio.com", projectId: "drivingcreditscoringsystem", storageBucket: "drivingcreditscoringsystem.firebasestorage.app", messagingSenderId: "705137872436", appId: "1:705137872436:web:97058309dc0076f7e2c461" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const storage = getStorage(app);
-
-    const refs = {
-      CarBrand: document.getElementById("CarBrand"),
-      LicensePlate: document.getElementById("LicensePlate"),
-      DriverID: document.getElementById("DriverID"),
-      DriverBirthday: document.getElementById("DriverBirthday"),
-      Point: document.getElementById("Point"),
-      TooClose: document.getElementById("TooClose"),
-      LanePressingLine: document.getElementById("LanePressingLine"),
-      Distractions: document.getElementById("Distractions"),
-      Nod: document.getElementById("Nod"),
-      UsingMobilePhone: document.getElementById("UsingMobilePhone"),
-      Smoke: document.getElementById("Smoke"),
-      CarImg: document.getElementById("CarImg"),
-      DriverImg: document.getElementById("DriverImg"),
-      logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)),
-      loadingText: document.getElementById("loading-text"),
-      dataTable: document.querySelectorAll(".card, .info-card, .log-card, .summary-card")
-    };
-
+    const refs = { CarBrand: document.getElementById("CarBrand"), LicensePlate: document.getElementById("LicensePlate"), DriverID: document.getElementById("DriverID"), DriverBirthday: document.getElementById("DriverBirthday"), Point: document.getElementById("Point"), TooClose: document.getElementById("TooClose"), LanePressingLine: document.getElementById("LanePressingLine"), Distractions: document.getElementById("Distractions"), Nod: document.getElementById("Nod"), UsingMobilePhone: document.getElementById("UsingMobilePhone"), Smoke: document.getElementById("Smoke"), CarImg: document.getElementById("CarImg"), DriverImg: document.getElementById("DriverImg"), logs: [1,2,3,4,5].map(i => document.getElementById(`log${i}`)), loadingText: document.getElementById("loading-text") };
     function updateViolation(data) {
-      ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => {
-        refs[key].textContent = data.Violation?.[key] ?? 0;
-      });
+      ["TooClose","LanePressingLine","Distractions","Nod","UsingMobilePhone","Smoke"].forEach(key => { refs[key].textContent = data.Violation?.[key] ?? 0 });
       const arr = data.Log?.slice(-5).reverse() ?? [];
       refs.logs.forEach((el,i) => el.textContent = arr[i] || '');
     }
@@ -168,24 +123,8 @@
       document.querySelectorAll('.card, .info-card, .log-card, .summary-card').forEach(el => el.classList.toggle('loading', show));
       refs.loadingText.style.display = show ? 'block' : 'none';
     }
-
-    const driverID = 'A123456789';
-    setLoading(true);
-    onValue(dbRef(db, `/ID/${driverID}`), snap => {
-      setLoading(false);
-      if (!snap.exists()) return;
-      const data = snap.val();
-      refs.CarBrand.textContent = data.CarBrand || '---';
-      refs.LicensePlate.textContent = data.LicensePlate || '---';
-      refs.DriverID.textContent = driverID;
-      refs.DriverBirthday.textContent = data.DriverBirthday || '---';
-      refs.Point.textContent = data.Point ?? '--';
-
-      if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => refs.CarImg.src = url).catch(() => refs.CarImg.src = 'images/car.jpg');
-      if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => refs.DriverImg.src = url).catch(() => refs.DriverImg.src = 'images/person.jpg');
-
-      updateViolation(data);
-    }, err => { setLoading(false); console.error('Firebase error:', err); });
+    const driverID = 'A123456789'; setLoading(true);
+    onValue(dbRef(db, `/ID/${driverID}`), snap => { setLoading(false); if (!snap.exists()) return; const data = snap.val(); refs.CarBrand.textContent = data.CarBrand || '---'; refs.LicensePlate.textContent = data.LicensePlate || '---'; refs.DriverID.textContent = driverID; refs.DriverBirthday.textContent = data.DriverBirthday || '---'; refs.Point.textContent = data.Point ?? '--'; if (data.CarImgURL) getDownloadURL(storageRef(storage, data.CarImgURL)).then(url => refs.CarImg.src = url).catch(() => refs.CarImg.src = 'images/car.jpg'); if (data.DriverImgURL) getDownloadURL(storageRef(storage, data.DriverImgURL)).then(url => refs.DriverImg.src = url).catch(() => refs.DriverImg.src = 'images/person.jpg'); updateViolation(data); }, err => { setLoading(false); console.error('Firebase error:', err); });
   </script>
 </body>
 </html>
