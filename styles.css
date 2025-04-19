@@ -82,6 +82,7 @@ body {
     object-position: center;
     border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
+    margin: 0 auto;  /* 這裡將圖片的外邊距設為 auto 以確保完全居中 */
 }
 
 .card {
