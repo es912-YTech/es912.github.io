@@ -131,7 +131,7 @@
 
     // 更新違規紀錄
     function updateViolation(data) {
-      const logs = Array.isArray(data.Logs) ? data.Logs : [];
+      const logs = Array.isArray(data.Log) ? data.Log : [];
       const latest9 = logs.slice(-9); // 取最新的9筆紀錄
 
       // 更新畫面
