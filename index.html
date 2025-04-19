@@ -132,7 +132,7 @@
     // 更新違規紀錄
     function updateViolation(data) {
       const logs = Array.isArray(data.Log) ? data.Log : [];
-      const latest9 = logs.slice(-9); // 取最新的9筆紀錄
+      const latest9 = logs.slice(-9).reverse(); // 取最新的9筆紀錄並反轉順序
 
       // 更新畫面
       refs.logs.forEach((el, i) => {
