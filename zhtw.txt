@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>駕駛信用評分系統 - ES912</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <header class="site-header">
+      <img src="images/0.jpg" alt="駕駛信用評分系統" class="header-img">
+    </header>
+
+    <!-- Loading Indicator -->
+    <div id="loading-text" class="loading-indicator">資料載入中...</div>
+
+    <!-- Main Content Section -->
+    <section class="top-section">
+      <!-- Car Image Section -->
+      <div class="card image-card">
+        <h3>汽車圖片</h3>
+        <img id="CarImg" src="images/car.jpg" alt="汽車圖片">
+      </div>
+
+      <!-- Driver Image Section -->
+      <div class="card image-card">
+        <h3>駕駛人圖片</h3>
+        <img id="DriverImg" src="images/person.jpg" alt="駕駛人圖片">
+      </div>
+
+      <!-- Driver Score Section -->
+      <div class="card score-card">
+        <div class="score-label">總評分</div>
+        <div id="Point">--</div>
+      </div>
+    </section>
+
+    <!-- Driver Information Section -->
+    <section class="info-grid">
+      <div class="info-card"><strong>汽車款式型號</strong><span id="CarBrand">---</span></div>
+      <div class="info-card"><strong>汽車車牌號</strong><span id="LicensePlate">---</span></div>
+      <div class="info-card"><strong>駕駛人身分證</strong><span id="DriverID">---</span></div>
+      <div class="info-card"><strong>駕駛人生日</strong><span id="DriverBirthday">---</span></div>
+    </section>
+
+    <!-- Violation and Driver State Summary Section -->
+    <section class="bottom-section">
+      <div class="log-card">
+        <h3>記錄日誌</h3>
+        <ul class="scrollable-list">
+          <li id="log1"></li>
+          <li id="log2"></li>
+          <li id="log3"></li>
+          <li id="log4"></li>
+          <li id="log5"></li>
+          <li id="log6"></li>
+          <li id="log7"></li>
+          <li id="log8"></li>
+        </ul>
+      </div>
+
+      <!-- Violation Summary Section -->
+      <div class="summary-wrapper">
+        <div class="summary-card violation-card">
+          <h3>違規次數</h3>
+          <table>
+            <tr><td>車距過近</td><td><span id="TooClose">0</span> 次</td></tr>
+            <tr><td>壓車道線</td><td><span id="LanePressingLine">0</span> 次</td></tr>
+          </table>
+        </div>
+
+        <!-- Driver State Summary Section -->
+        <div class="summary-card state-card">
+          <h3>駕駛狀態檢測</h3>
+          <table>
+            <tr><td>分心</td><td><span id="Distractions">0</span> 次</td></tr>
+            <tr><td>打瞌睡</td><td><span id="Nod">0</span> 次</td></tr>
+            <tr><td>使用手機</td><td><span id="UsingMobilePhone">0</span> 次</td></tr>
+            <tr><td>抽菸</td><td><span id="Smoke">0</span> 次</td></tr>
+            <tr><td>未繫安全帶</td><td><span id="SeatBelt">0</span> 次</td></tr>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
