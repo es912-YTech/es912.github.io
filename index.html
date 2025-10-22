@@ -109,110 +109,130 @@
         </section>
     </div>
 
-  <script type="module">
-    // Firebase 設定
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
-    import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+      import { getDatabase, ref as dbRef, onValue } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+      import { getStorage, ref as storageRef, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAIKckHmmsP10KyEwIm-oo0iOuDSK6Wg5Q",
-      authDomain: "yuntech-driver-credit.firebaseapp.com",
-      databaseURL: "https://yuntech-driver-credit-default-rtdb.firebaseio.com",
-      projectId: "yuntech-driver-credit",
-      storageBucket: "yuntech-driver-credit.firebasestorage.app",
-      messagingSenderId: "314900664812",
-      appId: "1:314900664812:web:f74cb3a2fe358ba38870c9",
-      measurementId: "G-ZFCMMCB2XB"
-    };
+      const firebaseConfig = {
+          apiKey: "AIzaSyAIKckHmmsP10KyEwIm-oo0iOuDSK6Wg5Q",
+          authDomain: "yuntech-driver-credit.firebaseapp.com",
+          databaseURL: "https://yuntech-driver-credit-default-rtdb.firebaseio.com",
+          projectId: "yuntech-driver-credit",
+          storageBucket: "yuntech-driver-credit.firebasestorage.app",
+          messagingSenderId: "314900664812",
+          appId: "1:314900664812:web:f74cb3a2fe358ba38870c9",
+          measurementId: "G-ZFCMMCB2XB"
+      };
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
+      const storage = getStorage(app);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
+      // 定義 HTML 元素參考
+      const refs = {
+          CarBrand: document.getElementById("CarBrand"),
+          LicensePlate: document.getElementById("LicensePlate"),
+          DriverID: document.getElementById("DriverID"),
+          DriverBirthday: document.getElementById("DriverBirthday"),
+          Point: document.getElementById("Point"),
+          TooClose: document.getElementById("TooClose"),
+          LanePressingLine: document.getElementById("LanePressingLine"),
+          Distractions: document.getElementById("Distractions"),
+          Nod: document.getElementById("Nod"),
+          UsingMobilePhone: document.getElementById("UsingMobilePhone"),
+          Smoke: document.getElementById("Smoke"),
+          SeatBelt: document.getElementById("SeatBelt"),
+          CarImg: document.getElementById("CarImg"),
+          DriverImg: document.getElementById("DriverImg"),
+          // get actual list items present in DOM (avoids mismatch between code and HTML)
+          logs: Array.from(document.querySelectorAll('.scrollable-list li')),
+          loadingText: document.getElementById("loading-text")
+      };
 
-    // 定義 HTML 元素參考
-    const refs = {
-      CarBrand: document.getElementById("CarBrand"),
-      LicensePlate: document.getElementById("LicensePlate"),
-      DriverID: document.getElementById("DriverID"),
-      DriverBirthday: document.getElementById("DriverBirthday"),
-      Point: document.getElementById("Point"),
-      TooClose: document.getElementById("TooClose"),
-      LanePressingLine: document.getElementById("LanePressingLine"),
-      Distractions: document.getElementById("Distractions"),
-      Nod: document.getElementById("Nod"),
-      UsingMobilePhone: document.getElementById("UsingMobilePhone"),
-      Smoke: document.getElementById("Smoke"),
-      SeatBelt: document.getElementById("SeatBelt"),
-      CarImg: document.getElementById("CarImg"),
-      DriverImg: document.getElementById("DriverImg"),
-      logs: [1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => document.getElementById(`log${i}`)),
-      loadingText: document.getElementById("loading-text")
-    };
+      // 中->英 翻譯表（根據需要擴充）
+      const translations = {
+          "車距過近": "Tailgating",
+          "壓車道線": "Lane departure",
+          "分心": "Distraction",
+          "疲勞駕駛": "Fatigue driving",
+          "使用手機": "Phone use",
+          "抽菸": "Smoking",
+          "未繫安全帶": "Unbuckled"
+      };
 
-    // 更新違規紀錄
-    function updateViolation(data) {
-      const logs = Array.isArray(data.Log) ? data.Log : [];
-      const latest9 = logs.slice(-9).reverse(); // 取最新的9筆紀錄並反轉順序
+      function translateLog(text) {
+          if (!text) return "";
+          let t = String(text);
+          // 對已知中文短語逐一替換為英語
+          for (const cn in translations) {
+              // 使用 split/join 避免瀏覽器相容性問題
+              t = t.split(cn).join(translations[cn]);
+          }
+          return t;
+      }
 
-      // 更新畫面
-      refs.logs.forEach((el, i) => {
-        const text = latest9[i] || '';
-        if (el.textContent !== text) {
-          el.textContent = text;
-        }
+      // 更新違規紀錄
+      function updateViolation(data) {
+          const logs = Array.isArray(data.Log) ? data.Log : [];
+          const latest9 = logs.slice(-9).reverse(); // 取最新的9筆紀錄並反轉順序
+          const translated = latest9.map(translateLog);
+          refs.logs.forEach((el, i) => {
+              const text = translated[i] || '';
+              if (el && el.textContent !== text) {
+                  el.textContent = text;
+              }
+          });
+      }
+
+      // 更新違規次數
+      function updateViolationTimes(data) {
+          refs.TooClose.textContent = data.TooClose ?? "---";
+          refs.LanePressingLine.textContent = data.LanePressingLine ?? "---";
+          refs.Distractions.textContent = data.Distractions ?? "---";
+          refs.Nod.textContent = data.Nod ?? "---";
+          refs.UsingMobilePhone.textContent = data.UsingMobilePhone ?? "---";
+          refs.Smoke.textContent = data.Smoke ?? "---";
+          refs.SeatBelt.textContent = data.SeatBelt ?? "---";
+      }
+
+      // 顯示/隱藏載入狀態
+      function setLoading(show) {
+          document.querySelectorAll('.card, .info-card, .log-card, .summary-card').forEach(el => el.classList.toggle('loading', show));
+          refs.loadingText.style.display = show ? 'block' : 'none';
+      }
+
+      // 監聽 Firebase 資料變化
+      const driverID = 'A123456789';
+      setLoading(true);
+      onValue(dbRef(db, `/ID/${driverID}`), snap => {
+          setLoading(false);
+          if (!snap.exists()) return;
+          const data = snap.val();
+          refs.CarBrand.textContent = data.CarBrand || '---';
+          refs.LicensePlate.textContent = data.LicensePlate || '---';
+          refs.DriverID.textContent = driverID;
+          refs.DriverBirthday.textContent = data.DriverBirthday || '---';
+          refs.Point.textContent = data.Point ?? '--';
+          updateViolationTimes(data.Violation);
+
+          // 下載並顯示車輛圖片和駕駛人圖片
+          if (data.CarImgURL) {
+              getDownloadURL(storageRef(storage, data.CarImgURL))
+                  .then(url => refs.CarImg.src = url)
+                  .catch(() => refs.CarImg.src = 'images/car.jpg');
+          }
+          if (data.DriverImgURL) {
+              getDownloadURL(storageRef(storage, data.DriverImgURL))
+                  .then(url => refs.DriverImg.src = url)
+                  .catch(() => refs.DriverImg.src = 'images/person.jpg');
+          }
+
+          // 更新日誌紀錄（會自動翻譯中文短語）
+          updateViolation(data);
+      }, err => {
+          setLoading(false);
+          console.error('Firebase error:', err);
       });
-    }
-
-    // 更新違規次數
-    function updateViolationTimes(data) {
-      refs.TooClose.textContent = data.TooClose ?? "---";
-      refs.LanePressingLine.textContent = data.LanePressingLine ?? "---";
-      refs.Distractions.textContent = data.Distractions ?? "---";
-      refs.Nod.textContent = data.Nod ?? "---";
-      refs.UsingMobilePhone.textContent = data.UsingMobilePhone ?? "---";
-      refs.Smoke.textContent = data.Smoke ?? "---";
-      refs.SeatBelt.textContent = data.SeatBelt ?? "---";
-    }
-
-    // 顯示/隱藏載入狀態
-    function setLoading(show) {
-      document.querySelectorAll('.card, .info-card, .log-card, .summary-card').forEach(el => el.classList.toggle('loading', show));
-      refs.loadingText.style.display = show ? 'block' : 'none';
-    }
-
-    // 監聽 Firebase 資料變化
-    const driverID = 'A123456789'; 
-    setLoading(true);
-    onValue(dbRef(db, `/ID/${driverID}`), snap => {
-      setLoading(false);
-      if (!snap.exists()) return;
-      const data = snap.val();
-      refs.CarBrand.textContent = data.CarBrand || '---';
-      refs.LicensePlate.textContent = data.LicensePlate || '---';
-      refs.DriverID.textContent = driverID;
-      refs.DriverBirthday.textContent = data.DriverBirthday || '---';
-      refs.Point.textContent = data.Point ?? '--';
-      updateViolationTimes(data.Violation);
-
-      // 下載並顯示車輛圖片和駕駛人圖片
-      if (data.CarImgURL) {
-        getDownloadURL(storageRef(storage, data.CarImgURL))
-          .then(url => refs.CarImg.src = url)
-          .catch(() => refs.CarImg.src = 'images/car.jpg');
-      }
-      if (data.DriverImgURL) {
-        getDownloadURL(storageRef(storage, data.DriverImgURL))
-          .then(url => refs.DriverImg.src = url)
-          .catch(() => refs.DriverImg.src = 'images/person.jpg');
-      }
-
-      // 更新日誌紀錄
-      updateViolation(data);
-    }, err => {
-      setLoading(false);
-      console.error('Firebase error:', err);
-    });
   </script>
 </body>
 
